@@ -1,1 +1,1 @@
-export { add } from './add';
+export { superstructResolver } from './superstruct-resolver';

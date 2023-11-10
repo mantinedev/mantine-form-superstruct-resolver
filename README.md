@@ -1,36 +1,111 @@
-# ts-package-template
+# mantine-form-superstruct-resolver
 
-A template to publish a TypeScript package to npm.
+[superstruct](https://www.npmjs.com/package/superstruct) resolver for [@mantine/form](https://mantine.dev/form/use-form/).
 
-Included tools:
+## Installation
 
-- Yarn v4
-- Rollup
-- esbuild
-- jest
-- prettier
-- ESLint
-- GitHub workflow for tests
+With yarn:
 
-## Usage
+```sh
+yarn add superstruct mantine-form-superstruct-resolver
+```
 
-- Click "Use this template" button to create a new repository from this template
-- Clone the new repository
-- Change `package.json` to your own package name, description, etc. **!important**: change `repository.url` and other repository links to your own repository url
-- Install dependencies: `yarn` (other package managers are not supported)
-- Write your code in `src/` directory
-- Run `npm run release` to build and publish your package to npm
+With npm:
 
-## Publishing to npm
+```sh
+npm install superstruct mantine-form-superstruct-resolver
+```
 
-Use `release` script to publish the package:
+## Basic fields validation
 
-- `npm run release` – release a new patch version to npm
-- `npm run release minor` – release a new minor version to npm
-- `npm run release major` – release a new major version to npm
-- `npm run release minor -- --stage alpha` – release a new minor alpha version to npm (for example, `1.1.0-alpha.0`)
+```tsx
+import * as s from 'superstruct';
+import isEmail from 'is-email';
+import { superstructResolver } from 'mantine-form-superstruct-resolver';
 
-Note that release script will always publish public packages to npm. If you want to publish a private package, change release script in `scripts/release.ts`.
+const emailString = s.define('email', isEmail);
+
+const schema = s.object({
+  name: s.size(s.string(), 2, 30),
+  email: emailString,
+  age: s.min(s.number(), 18),
+});
+
+const form = useForm({
+  initialValues: {
+    name: '',
+    email: '',
+    age: 16,
+  },
+  validate: superstructResolver(schema),
+});
+
+form.validate();
+form.errors;
+// -> {
+//   name: 'name: Expected a string with a length between `2` and `30` but received one with a length of `0`',
+//   email: 'email: Expected a value of type `email`, but received: `""`',
+//   age: 'age: Expected a number greater than or equal to 18 but received `16`',
+// }
+```
+
+## Nested fields validation
+
+```tsx
+import * as s from 'superstruct';
+import { useForm } from '@mantine/form';
+import { superstructResolver } from 'mantine-form-superstruct-resolver';
+
+const nestedSchema = s.object({
+  nested: s.object({
+    field: s.size(s.string(), 2, 30),
+  }),
+});
+
+const form = useForm({
+  initialValues: {
+    nested: {
+      field: '',
+    },
+  },
+  validate: superstructResolver(nestedSchema),
+});
+
+form.validate();
+form.errors;
+// -> {
+//  'nested.field': 'nested field: Expected a string with a length between `2` and `30` but received one with a length of `0`',
+// }
+```
+
+## List fields validation
+
+```tsx
+import * as s from 'superstruct';
+import { useForm } from '@mantine/form';
+import { superstructResolver } from 'mantine-form-superstruct-resolver';
+
+const listSchema = s.object({
+  list: s.array(
+    s.object({
+      name: s.size(s.string(), 2, 30),
+    })
+  ),
+});
+
+const form = useForm({
+  initialValues: {
+    list: [{ name: '' }],
+  },
+  validate: superstructResolver(listSchema),
+});
+
+form.validate();
+form.errors;
+// -> {
+//  'list 0 name: Expected a string with a length between `2` and `30` but received one with a length of `0`',
+// }
+```
 
 ## License
 
