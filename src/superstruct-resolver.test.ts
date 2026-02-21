@@ -114,5 +114,7 @@ it('validates schema asynchronously with mode async', async () => {
     age: 'age: Expected a number greater than or equal to 18 but received `16`',
   });
 
-  await expect(validate({ name: 'John', email: 'john@email.com', age: 18 })).resolves.toStrictEqual({});
+  await expect(validate({ name: 'John', email: 'john@email.com', age: 18 })).resolves.toStrictEqual(
+    {}
+  );
 });
