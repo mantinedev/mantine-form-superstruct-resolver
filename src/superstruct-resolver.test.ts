@@ -104,3 +104,15 @@ it('validates list fields with given superstruct schema', () => {
 
   expect(hook.result.current.errors).toStrictEqual({});
 });
+
+it('validates schema asynchronously with mode async', async () => {
+  const validate = superstructResolver(schema, { mode: 'async' });
+
+  await expect(validate({ name: '', email: '', age: 16 })).resolves.toStrictEqual({
+    name: 'name: Expected a string with a length between `2` and `30` but received one with a length of `0`',
+    email: 'email: Expected a value of type `email`, but received: `""`',
+    age: 'age: Expected a number greater than or equal to 18 but received `16`',
+  });
+
+  await expect(validate({ name: 'John', email: 'john@email.com', age: 18 })).resolves.toStrictEqual({});
+});
